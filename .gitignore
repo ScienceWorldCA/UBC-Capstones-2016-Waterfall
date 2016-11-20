@@ -1,3 +1,4 @@
+#------------Github's C++ Ignore Template------------
 # Compiled Object files
 *.slo
 *.lo
@@ -27,3 +28,26 @@
 *.exe
 *.out
 *.app
+
+#------------Github's Java Ignore Template-------------
+*.class
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+#-----------Ignore Backup Software Temp Files----------
+*.rsls
+*.rs*
+
+
