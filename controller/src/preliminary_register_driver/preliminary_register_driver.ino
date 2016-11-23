@@ -1,9 +1,9 @@
 #include "TimerOne.h"
 
-#define SRCLR_PIN 13  //Active low
-#define SRCLK_PIN 12
-#define RCLK_PIN 11
-#define OE_PIN 10     //Active Low
+#define SRCLR_PIN 9  //Active low
+#define SRCLK_PIN 8
+#define RCLK_PIN 7
+#define OE_PIN 6     //Active Low
 
 #define VALVES_PER_VALVE_BANK 8
 #define NUM_VALVE_BANKS 2
@@ -12,8 +12,8 @@
 //TODO: Likely change this to come from the pattern file
 #define PATTERN_LENGTH 16
 
-#define SER1_PIN 8
-#define SER2_PIN 9
+#define SER1_PIN 2
+#define SER2_PIN 3
 
 int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN, SER2_PIN};
 
