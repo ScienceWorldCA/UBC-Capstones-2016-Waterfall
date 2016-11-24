@@ -4,8 +4,8 @@
 //CS pin for Arduino Uno
 const int chipSelect = 8;
 //const int chipSelect = 4; //for Ethernet shield
-const int imageWidthBytes = 8;
-const int lineWidth = 65;
+const int imageWidthBytes = 2;
+const int lineWidth = 17;
 
 void setup() {
   // put your setup code here, to run once:
@@ -22,7 +22,9 @@ void setup() {
     return;
   }
   Serial.println("Card initialized");
-
+  
+  //checkCard();
+  //read();
   convertToByte();
   //write();
 }
@@ -39,8 +41,17 @@ void write(){
   }
 }
 
+void checkCard(){
+  boolean flag = SD.exists("twitter.txt");
+  if(flag){
+    Serial.println("File exists");
+  }else{
+    Serial.println("File does not exist");
+  }
+}
+
 void read(){
-  File dataFile = SD.open("b_binary.txt");
+  File dataFile = SD.open("twitter.txt");
   if(!dataFile){
     Serial.println("Error on opening the file");
     return;
@@ -52,7 +63,7 @@ void read(){
 }
 
 void convertToByte(){
-  File dataFile = SD.open("b_binary.txt");
+  File dataFile = SD.open("twitter.txt");
   if(!dataFile){
     Serial.println("Error on opening the file");
     return;
@@ -77,7 +88,8 @@ void convertToByte(){
       bitCounter = 8;
       regCounter++;
     }
-    if(regCounter == 8){
+    //change number of regCounter when width is different
+    if(regCounter == 2){
       regCounter = 0;
       lineCounter++;
     }
