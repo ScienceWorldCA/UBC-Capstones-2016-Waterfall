@@ -1,4 +1,5 @@
-#include "TimerOne.h"
+//#include "TimerOne.h"
+#include <MsTimer2.h>
 
 #define SRCLR_PIN 9  //Active low
 #define SRCLK_PIN 8
@@ -17,22 +18,22 @@
 
 int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN, SER2_PIN};
 
-char pattern[PATTERN_LENGTH][NUM_VALVES] = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                           {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                                           {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                           {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                                           {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                           {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1},
-                                           {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0},
-                                           {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1},
-                                           {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0},
-                                           {0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1},
-                                           {1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0},
-                                           {0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1},
-                                           {1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0},
-                                           {1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0},
-                                           {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1},
-                                           {0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0}};
+byte shiftReg[PATTERN_LENGTH][NUM_VALVE_BANKS] ={{0b00000000,0b00000000},
+                                                {0b11111111,0b11111111},
+                                                {0b00000000,0b00000000},
+                                                {0b11111111,0b11111111},
+                                                {0b00000000,0b00000000},
+                                                {0b01010101,0b01010101},
+                                                {0b10101010,0b10101010},
+                                                {0b01010101,0b01010101},
+                                                {0b10101010,0b10101010},
+                                                {0b00110011,0b00110011},
+                                                {0b11001100,0b11001100},
+                                                {0b00110011,0b00110011},
+                                                {0b11001100,0b11001100},
+                                                {0b11111111,0b00000000},
+                                                {0b00000000,0b11111111},
+                                                {0b00001111,0b11110000}};
                 
 int current_pattern_line = 0;
 
@@ -51,7 +52,7 @@ void update_output(void)
     int k;
     for (k = 0; k < NUM_VALVE_BANKS; k++)
     {
-      if (pattern[current_pattern_line][j + (VALVES_PER_VALVE_BANK * k)])
+      if ((shiftReg[current_pattern_line][k] >> j) & 1)
         digitalWrite(serial_pins[k], HIGH);
       else
         digitalWrite(serial_pins[k], LOW);
@@ -69,8 +70,10 @@ void setup() {
   pinMode(SER1_PIN, OUTPUT);
   pinMode(SER2_PIN, OUTPUT);
   
-  Timer1.initialize(250000);         // initialize timer1, and set a 1/4 second period
-  Timer1.attachInterrupt(update_output);  // attaches update_output() as a timer overflow interrupt
+  //Timer1.initialize(250000);         // initialize timer1, and set a 1/4 second period
+  //Timer1.attachInterrupt(update_output);  // attaches update_output() as a timer overflow interrupt
+  MsTimer2::set(250, (&update_output));
+  MsTimer2::start();
 }
 
 void loop() {
