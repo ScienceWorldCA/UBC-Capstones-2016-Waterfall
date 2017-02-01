@@ -147,6 +147,7 @@ void convertToByte(){
   int bitCounter = 8;
   int regCounter = 0;
   int lineCounter = 0;
+  int lineIndex = 0;
   //byte shiftReg[lines][imageWidthBytes] = {0};
   byte temp;
   while(lineCounter < lines){
@@ -154,12 +155,12 @@ void convertToByte(){
     if(temp == '0'){
       bitCounter--;
       //shiftReg[lineCounter][regCounter] = shiftReg[lineCounter][regCounter] << 1;
-      shiftReg[lineCounter + regCounter] = shiftReg[lineCounter + regCounter] << 1;
+      shiftReg[lineIndex + regCounter] = shiftReg[lineIndex + regCounter] << 1;
     }
     else if(temp == '1'){
       bitCounter--;
       //shiftReg[lineCounter][regCounter] = (shiftReg[lineCounter][regCounter] << 1) + 1;
-      shiftReg[lineCounter + regCounter] = (shiftReg[lineCounter + regCounter] << 1) + 1;
+      shiftReg[lineIndex + regCounter] = (shiftReg[lineIndex + regCounter] << 1) + 1;
     }
     if(bitCounter == 0){
       bitCounter = 8;
@@ -168,7 +169,8 @@ void convertToByte(){
     //change number of regCounter when width is different
     if(regCounter == 2){
       regCounter = 0;
-      lineCounter = (lineCounter + 1) * imageWidthBytes;
+      lineCounter++;
+      lineIndex = lineCounter * imageWidthBytes;
     }
   }
   dataFile.close();
