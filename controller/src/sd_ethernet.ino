@@ -24,14 +24,17 @@
 int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN, SER2_PIN};
 
 byte shiftReg[16][2] = {0};
+//byte *shiftReg;
 
 int current_pattern_line = 0;
 
 void update_output(void)
 {
+  //Update the output with the data stored in the shift register
   digitalWrite(RCLK_PIN, HIGH);
   digitalWrite(RCLK_PIN, LOW); 
-  
+
+  //Update the data stored in the shift register to be ready for the next line as soon as the timer triggers
   current_pattern_line = (current_pattern_line + 1) % PATTERN_LENGTH;
   
   //Iterate through the 8 bits being sent to a shift register for a given row (prepare the next row for output)
@@ -42,24 +45,23 @@ void update_output(void)
     int k;
     for (k = 0; k < NUM_VALVE_BANKS; k++)
     {
-      if ((shiftReg[current_pattern_line][k] >> j) & 1)
+      if ((shiftReg[(current_pattern_line * NUM_VALVE_BANKS) + k] >> j) & 1)
         digitalWrite(serial_pins[k], HIGH);
       else
         digitalWrite(serial_pins[k], LOW);
     }
+    //Write this set of bits into the shift registers (1 per shift register)
     digitalWrite(SRCLK_PIN, HIGH);
     digitalWrite(SRCLK_PIN, LOW);
   }
 }
 
 void setup_shiftregs() {
-  //Timer1.initialize(1000000);         // initialize timer1, and set a 1 second period
-  //Timer1.attachInterrupt(update_output);  // attaches update_output() as a timer overflow interrupt
-  MsTimer2::set(250, (&update_output));
+  MsTimer2::set(250, (&update_output)); // initialize timer to trigger update_output(), and set a 250 ms period
   MsTimer2::start();
 
-  digitalWrite(SRCLR_PIN, HIGH);
-  digitalWrite(OE_PIN, LOW);
+  digitalWrite(SRCLR_PIN, HIGH); //Disable Serial Clear
+  digitalWrite(OE_PIN, LOW); //Enable output
 }
 // END OF CODE FOR CONTROLLING THE SHIFT REGISTERS AND LEDS  //
 //////////////////////////////////////////////////////////////////////////////
@@ -143,6 +145,7 @@ void convertToByte(){
   int bitCounter = 8;
   int regCounter = 0;
   int lineCounter = 0;
+
   //byte shiftReg[lines][imageWidthBytes] = {0};
   byte temp;
   while(lineCounter < lines){
@@ -179,6 +182,7 @@ void convertToByte(){
 }
 
 void loop(){
-  convertToByte();
+  //convertToByte();
   setup_shiftregs();
+  while(1);
 } 
