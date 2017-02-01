@@ -180,7 +180,7 @@ void convertToByte(){
       Serial.print(j);
       Serial.print(':');
       //Serial.print(shiftReg[i][j], BIN);
-      int index = lines * imageWidthBytes + imageWidthBytes;
+      int index = i * imageWidthBytes + j;
       Serial.print(shiftReg[index], BIN);
       Serial.print('\t');
     }
