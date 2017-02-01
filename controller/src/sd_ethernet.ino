@@ -23,8 +23,8 @@
 
 int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN, SER2_PIN};
 
-byte shiftReg[16][2] = {0};
-//byte *shiftReg;
+//byte shiftReg[16][2] = {0};
+byte *shiftReg;
 
 int current_pattern_line = 0;
 
@@ -140,23 +140,26 @@ void convertToByte(){
     Serial.println("Error on opening the file");
     return;
   }
-  //int lines = dataFile.size() / lineWidth;
-  int lines = 16;
+  int lines = dataFile.size() / lineWidth;
+  int total_size = lines * imageWidthBytes;
+  memset(shiftReg, 0, sizeof(byte) * total_size);
+  //int lines = 16;
   int bitCounter = 8;
   int regCounter = 0;
   int lineCounter = 0;
-
   //byte shiftReg[lines][imageWidthBytes] = {0};
   byte temp;
   while(lineCounter < lines){
     temp = dataFile.read();
     if(temp == '0'){
       bitCounter--;
-      shiftReg[lineCounter][regCounter] = shiftReg[lineCounter][regCounter] << 1;
+      //shiftReg[lineCounter][regCounter] = shiftReg[lineCounter][regCounter] << 1;
+      shiftReg[lineCounter + regCounter] = shiftReg[lineCounter + regCounter] << 1;
     }
     else if(temp == '1'){
       bitCounter--;
-      shiftReg[lineCounter][regCounter] = (shiftReg[lineCounter][regCounter] << 1) + 1;
+      //shiftReg[lineCounter][regCounter] = (shiftReg[lineCounter][regCounter] << 1) + 1;
+      shiftReg[lineCounter + regCounter] = (shiftReg[lineCounter + regCounter] << 1) + 1;
     }
     if(bitCounter == 0){
       bitCounter = 8;
@@ -165,7 +168,7 @@ void convertToByte(){
     //change number of regCounter when width is different
     if(regCounter == 2){
       regCounter = 0;
-      lineCounter++;
+      lineCounter = (lineCounter + 1) * imageWidthBytes;
     }
   }
   dataFile.close();
@@ -174,7 +177,9 @@ void convertToByte(){
     for(j = 0; j < imageWidthBytes; j++){
       Serial.print(j);
       Serial.print(':');
-      Serial.print(shiftReg[i][j], BIN);
+      //Serial.print(shiftReg[i][j], BIN);
+      int index = lines * imageWidthBytes + imageWidthBytes;
+      Serial.print(shiftReg[index], BIN);
       Serial.print('\t');
     }
     Serial.print('\n');
