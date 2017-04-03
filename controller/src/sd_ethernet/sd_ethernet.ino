@@ -1,33 +1,19 @@
+
 #include <SPI.h>
 #include <SD.h>
-#include "valve_output.h"
-#include <MsTimer2.h>
 
-//byte shiftReg[16][2] = {0};
 byte *shiftReg;
 
-//CS pin for Arduino Uno
+//CS pin for Arduino Uno'
 const int chipSelect = 8;
-//const int chipSelect = 4; //for Ethernet shield
-//const int imageWidthBytes = 8;
+//CS pin for Teensy 3.5
+//const int chipSelect = BUILTIN_SDCARD;
 const int imageWidthBytes = 1;
-const int lineWidth = 4;
+const int lineWidth = 9;
 
 //////////////////////
 
 void setup(){
-
-  pinMode(SRCLR_PIN, OUTPUT);
-  pinMode(SRCLK_PIN, OUTPUT);
-  pinMode(RCLK_PIN, OUTPUT);
-  pinMode(OE_PIN, OUTPUT);
-  pinMode(SER1_PIN, OUTPUT);
-  pinMode(SER2_PIN, OUTPUT);
-
-  pinMode(13, OUTPUT); // pin selected to control. Built-in LED for demo.
-  digitalWrite(13, LOW); // set it to low to it starts off
-
-  //enable serial data print 
   Serial.begin(9600); 
   Serial.println("Initializing SD card...");
 
@@ -36,9 +22,6 @@ void setup(){
     return;
   }
   Serial.println("Card initialized");
-
-  //convertToByte();
-  
 }
 
 void write(){
@@ -74,72 +57,58 @@ void checkCard(){
   }
 }
 
-void convertToByte(){
-  File dataFile = SD.open("middleon.txt");
+void convertToByte(char* filename){
+  File dataFile = SD.open(filename);
   if(!dataFile){
     Serial.println("Error on opening the file");
     return;
   }
-  //int lines = dataFile.size() / lineWidth;
-  int lines = 6;
+  int lines = dataFile.size() / lineWidth;
   int total_size = lines * imageWidthBytes;
   shiftReg = (byte*)malloc(total_size * sizeof(byte));
   memset(shiftReg, 0, sizeof(byte) * total_size);
-  int bitCounter = 3;
+  int bitCounter = 8;
   int regCounter = 0;
   int lineCounter = 0;
-  //int lineIndex = (lines - 1) * imageWidthBytes;
-  int startIndex = lines - 1;
+  int lineIndex = (lines - 1) * imageWidthBytes;
+  int startIndex = lineIndex;
   byte temp;
-  while(1){
+  while(lineCounter < lines){
     temp = dataFile.read();
     if(temp == '0'){
       bitCounter--;
-      shiftReg[startIndex] = shiftReg[startIndex] << 1;
+      shiftReg[lineIndex + regCounter] = shiftReg[lineIndex + regCounter] << 1;
     }
     else if(temp == '1'){
       bitCounter--;
-      shiftReg[startIndex] = (shiftReg[startIndex] << 1) + 1;
+      shiftReg[lineIndex + regCounter] = (shiftReg[lineIndex + regCounter] << 1) + 1;
     }
-    /*
     if(bitCounter == 0){
-      bitCounter = 3;
+      bitCounter = 8;
       regCounter++;
-    }*/
-    //change number of regCounter when width is different
-    if(bitCounter == 0){
-      bitCounter = 3;
-      //regCounter = 0;
-      lineCounter++;
-      startIndex--;
     }
-    if(startIndex < 0){
-      break;
+    //change number of regCounter when width is different
+    if(regCounter == imageWidthBytes){
+      regCounter = 0;
+      lineCounter++;
+      lineIndex = startIndex - lineCounter * imageWidthBytes;
     }
   }
   dataFile.close();
   int i, j;
   for(i = 0; i < lines; i++){
-    //for(j = 0; j < imageWidthBytes; j++){
-      Serial.print(i);
+    for(j = 0; j < imageWidthBytes; j++){
+      Serial.print(j);
       Serial.print(':');
-      //Serial.print(shiftReg[i][j], BIN);
-      //int index = i * imageWidthBytes + j;
-      Serial.print(shiftReg[i], BIN);
+      int index = i * imageWidthBytes + j;
+      Serial.print(shiftReg[index], BIN);
       Serial.print('\t');
-   // }
+    }
     Serial.print('\n');
   }
+  Serial.print('\n');
 }
 
 void loop(){
-  convertToByte();
-  setup_shiftregs();
-  while(1)
-  {
-    if (pattern_load_high_low)
-      load_shiftreg_high_low(shiftReg);
-    if (pattern_load_low_high)
-      load_shiftreg_low_high(shiftReg);
-  }
+  convertToByte("1.txt");
 } 
