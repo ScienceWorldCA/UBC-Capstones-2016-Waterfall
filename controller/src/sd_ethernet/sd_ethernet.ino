@@ -1,8 +1,16 @@
-
 #include <SPI.h>
 #include <SD.h>
+#include "valve_output.h"
+#include <MsTimer2.h>
+#include <TimerThree.h>
+
+
 
 byte *shiftReg;
+int lines;
+
+//Variable for button debouncing
+bool isButtonDebouncing;
 
 //CS pin for Arduino Uno'
 const int chipSelect = 8;
@@ -65,13 +73,30 @@ void checkCard(){
   }
 }
 
+//Shuffles the bits within a byte (within a given valve bank) to account for the wiring order of the valves to the circuits
+char byteShuffle(char input)
+{
+  char output = 0;
+  
+  output |= ((input >> 6) & 1); //7th bit maps to 1st bit
+  output |= ((input >> 4) & 1) << 1; //5th bit maps to 2nd bit
+  output |= ((input >> 2) & 1) << 2; //3rd bit maps to 3rd bit
+  output |= (input & 1) << 3; //1st bit maps to 4th bit
+  output |= ((input >> 1) & 1) << 4; //2nd bit maps to 5th bit
+  output |= ((input >> 3) & 1) << 5; //4th bit maps to 6th bit
+  output |= ((input >> 5) & 1) << 6; //6th bit maps to 7th bit
+  output |= ((input >> 7) & 1) << 7; //8th bit maps to 8th bit
+  
+  return output;
+}
+
 void convertToByte(char* filename){
   File dataFile = SD.open(filename);
   if(!dataFile){
     Serial.println("Error on opening the file");
     return;
   }
-  int lines = dataFile.size() / lineWidth;
+  lines = dataFile.size() / lineWidth;
   int total_size = lines * imageWidthBytes;
   shiftReg = (byte*)malloc(total_size * sizeof(byte));
   memset(shiftReg, 0, sizeof(byte) * total_size);
@@ -93,6 +118,7 @@ void convertToByte(char* filename){
     }
     if(bitCounter == 0){
       bitCounter = 8;
+      shiftReg[lineIndex + regCounter] = byteShuffle(shiftReg[lineIndex + regCounter]);
       regCounter++;
     }
     //change number of regCounter when width is different
@@ -144,6 +170,11 @@ char *lookupTable(int index){
   return filename;
 }
 
+void resetButtonDebounce(){
+  isButtonDebouncing = 0;
+  Timer3.stop();
+}
+
 void loadSelectedPattern(int index){
   int i;
   for(i = 0; i < 5; i++){
@@ -152,20 +183,31 @@ void loadSelectedPattern(int index){
 }
 
 void loop(){
-  int i;
-  for(i = 0; i < 6; i++){
-    buttonState = digitalRead(pushbutton[i]);
-    if(buttonState == LOW){
-      delay(20000);
-      loadSelectedPattern(pushbutton[i]-1);
-      delay(20000);
-      break;
+  isButtonDebouncing = 0;
+  convertToByte("6.txt");
+  setup_shiftregs();
+  Timer3.initialize(1000); //Set debounce time as 1 second
+  Timer3.attachInterrupt(resetButtonDebounce);  
+
+  while(1)
+  {
+    if (!isButtonDebouncing){
+      int i;
+      for(i = 0; i < 6; i++){
+        buttonState = digitalRead(pushbutton[i]);
+        if(buttonState == LOW){
+          convertToByte(lookupTable(i));
+          isButtonDebouncing = 1;
+          Timer3.restart();
+          break;
+        }
+      }
     }
+
+    if (pattern_load_high_low)
+      load_shiftreg_high_low(shiftReg);
+    if (pattern_load_low_high)
+      load_shiftreg_low_high(shiftReg);
   }
   
-  convertToByte(lookupTable(loopCounter));
-  loopCounter++;
-  if(loopCounter > 6){
-    loopCounter = 1;
-  }
 } 

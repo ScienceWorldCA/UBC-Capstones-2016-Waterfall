@@ -9,14 +9,11 @@
 
 #define SER1_PIN 2
 #define SER2_PIN 3
-
-//TODO: Likely change this to come from the pattern file
-#define PATTERN_LENGTH 6
+#define SER3_PIN 4
 
 //Definitions for output size
-//Modify these values for larger implementations with more valve banks
 #define VALVES_PER_VALVE_BANK 8
-#define NUM_VALVE_BANKS 1
+#define NUM_VALVE_BANKS 3
 #define NUM_VALVES NUM_VALVE_BANKS * VALVES_PER_VALVE_BANK
 
 //length of each output "pixel" in milliseconds
@@ -26,7 +23,7 @@
 #define PIXEL_OFFSET_TIME 25
 
 //static const int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN, SER2_PIN};
-static const int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN};
+static const int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN, SER2_PIN, SER3_PIN};
 
 extern byte pattern_load_high_low;
 extern byte pattern_load_low_high;

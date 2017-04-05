@@ -7,7 +7,6 @@ int current_pattern_line = 0;
 //to account for valve switching time
 int output_timer_counter;
 
-//TODO: combine into one flag
 byte pattern_load_high_low;
 byte pattern_load_low_high;
 
@@ -45,7 +44,7 @@ void load_shiftreg_high_low (byte *shiftReg)
 {
   
   //Update the data stored in the shift register to be ready for the next line as soon as the timer triggers
-  current_pattern_line = (current_pattern_line + 1) % PATTERN_LENGTH;
+  current_pattern_line = (current_pattern_line + 1) % lines;
   
   
   //Iterate through the 8 bits being sent to a shift register for a given row (prepare the next row for output)
