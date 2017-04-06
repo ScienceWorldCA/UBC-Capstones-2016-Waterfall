@@ -13,13 +13,13 @@ int lines;
 bool isButtonDebouncing;
 
 //CS pin for Arduino Uno'
-const int chipSelect = 8;
+//const int chipSelect = 8;
 //CS pin for Teensy 3.5
-//const int chipSelect = BUILTIN_SDCARD;
-const int imageWidthBytes = 1;
-const int lineWidth = 9;
+const int chipSelect = BUILTIN_SDCARD;
+const int imageWidthBytes = 3;
+const int lineWidth = 25;
 int loopCounter = 1;
-int pushbutton[6] = {2, 3, 4, 5, 6, 7};
+int pushbutton[6] = {19,18,17,16,15,14};
 int buttonState = 0;
 
 //////////////////////
@@ -38,6 +38,15 @@ void setup(){
   for(i = 0; i < 6; i++){
     pinMode(pushbutton[i], INPUT);
   }
+
+  //Initializing the Shift Reg pins
+  pinMode(SRCLR_PIN, OUTPUT);
+  pinMode(SRCLK_PIN, OUTPUT);
+  pinMode(RCLK_PIN, OUTPUT);
+  pinMode(OE_PIN, OUTPUT);
+  pinMode(SER1_PIN, OUTPUT);
+  pinMode(SER2_PIN, OUTPUT);
+  pinMode(SER3_PIN, OUTPUT);
 }
 
 void write(){
@@ -98,6 +107,7 @@ void convertToByte(char* filename){
   }
   lines = dataFile.size() / lineWidth;
   int total_size = lines * imageWidthBytes;
+  free(shiftReg);
   shiftReg = (byte*)malloc(total_size * sizeof(byte));
   memset(shiftReg, 0, sizeof(byte) * total_size);
   int bitCounter = 8;
@@ -118,7 +128,7 @@ void convertToByte(char* filename){
     }
     if(bitCounter == 0){
       bitCounter = 8;
-      shiftReg[lineIndex + regCounter] = byteShuffle(shiftReg[lineIndex + regCounter]);
+      //shiftReg[lineIndex + regCounter] = byteShuffle(shiftReg[lineIndex + regCounter]);
       regCounter++;
     }
     //change number of regCounter when width is different
@@ -146,22 +156,22 @@ void convertToByte(char* filename){
 char *lookupTable(int index){
   char *filename;
   switch(index){
-    case 1:
+    case 0:
       filename = "1.txt";
       break;
-    case 2:
+    case 1:
       filename = "2.txt";
       break;
-    case 3:
+    case 2:
       filename = "3.txt";
       break;
-    case 4:
+    case 3:
       filename = "4.txt";
       break;
-    case 5:
+    case 4:
       filename = "5.txt";
       break;
-    case 6:
+    case 5:
       filename = "6.txt";
       break;
     default:
@@ -196,6 +206,8 @@ void loop(){
       for(i = 0; i < 6; i++){
         buttonState = digitalRead(pushbutton[i]);
         if(buttonState == LOW){
+          Serial.println("Loading: %d\n");
+          Serial.println(i);
           convertToByte(lookupTable(i));
           isButtonDebouncing = 1;
           Timer3.restart();
@@ -204,10 +216,15 @@ void loop(){
       }
     }
 
-    if (pattern_load_high_low)
-      load_shiftreg_high_low(shiftReg);
-    if (pattern_load_low_high)
-      load_shiftreg_low_high(shiftReg);
+    //if (pattern_load_high_low)
+    //  load_shiftreg_high_low(shiftReg);
+    //if (pattern_load_low_high)
+    //  load_shiftreg_low_high(shiftReg);
+
+    if (pattern_load_full_line)
+    {
+      load_shiftreg_full_line(shiftReg, lines);
+    }
   }
   
 } 

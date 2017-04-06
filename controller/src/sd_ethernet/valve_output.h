@@ -27,10 +27,12 @@ static const int serial_pins[NUM_VALVE_BANKS] = {SER1_PIN, SER2_PIN, SER3_PIN};
 
 extern byte pattern_load_high_low;
 extern byte pattern_load_low_high;
+volatile extern byte pattern_load_full_line;
 
 void setup_shiftregs(void);
 void load_shiftreg_low_high (byte *);
 void load_shiftreg_high_low (byte *);
+void load_shiftreg_full_line (byte *, int);
 void update_output(void);
 
 

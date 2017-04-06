@@ -1,4 +1,4 @@
-#include "valve_output.h"
+//#include "valve_output.h"
 
 byte *previous_pattern_line;
 int current_pattern_line = 0;
@@ -9,31 +9,34 @@ int output_timer_counter;
 
 byte pattern_load_high_low;
 byte pattern_load_low_high;
+volatile byte pattern_load_full_line;
 
 void update_output(void)
 {
   //do the high->low transition early then tell main to load the low->high transition
   if (output_timer_counter == 0)
   {
-    Serial.println("High->low\r\n");
+    //Serial.println("High->low\r\n");
     
     //Update the output with the data stored in the shift register
     digitalWrite(RCLK_PIN, HIGH);
     digitalWrite(RCLK_PIN, LOW);
 
     pattern_load_low_high = 1;
+    pattern_load_full_line = 1;
   }
   //do the low->high transition early then tell main to load the high->low transition 
-  else if (output_timer_counter == PIXEL_OFFSET_TIME)
+  /*else if (output_timer_counter == PIXEL_OFFSET_TIME)
   {
-    Serial.println("Low->High\r\n");
+    //Serial.println("Low->High\r\n");
     
     //Update the output with the data stored in the shift register
     digitalWrite(RCLK_PIN, HIGH);
     digitalWrite(RCLK_PIN, LOW);
 
     pattern_load_high_low = 1;
-  }
+    pattern_load_full_line = 1;
+  }*/
 
   //Reset the counter every PIXEL_TIME interrupts, causes pixel length to be PIXEL_TIME milliseconds
   output_timer_counter = (output_timer_counter + 1) % PIXEL_TIME;
@@ -44,7 +47,8 @@ void load_shiftreg_high_low (byte *shiftReg)
 {
   
   //Update the data stored in the shift register to be ready for the next line as soon as the timer triggers
-  current_pattern_line = (current_pattern_line + 1) % lines;
+  //TODO: current_pattern_line = (current_pattern_line + 1) % lines;
+  current_pattern_line = (current_pattern_line + 1) % 6;
   
   
   //Iterate through the 8 bits being sent to a shift register for a given row (prepare the next row for output)
@@ -97,6 +101,29 @@ void load_shiftreg_low_high (byte *shiftReg)
   previous_pattern_line = &shiftReg[current_pattern_line];
 
   pattern_load_low_high = 0;
+}
+
+void load_shiftreg_full_line (byte *shiftReg, int lineCount){
+  //Update the data stored in the shift register to be ready for the next line as soon as the timer triggers
+
+  current_pattern_line = (current_pattern_line + 1) % lineCount;
+  
+  //Iterate through the 8 bits being sent to a shift register for a given row (prepare the next row for output)
+  int j;
+  for (j = 0; j < VALVES_PER_VALVE_BANK; j++)
+  {
+    //Iterate through the shift registers, sending one bit to each
+    int k;
+    for (k = 0; k < NUM_VALVE_BANKS; k++)
+    {
+      digitalWrite(serial_pins[k], (shiftReg[(current_pattern_line * NUM_VALVE_BANKS) + k] >> j) & 1);
+    }
+    //Write this set of bits into the shift registers (1 per shift register)
+    digitalWrite(SRCLK_PIN, HIGH);
+    digitalWrite(SRCLK_PIN, LOW);
+  }
+
+  pattern_load_full_line = 0;
 }
 
 void setup_shiftregs() {
