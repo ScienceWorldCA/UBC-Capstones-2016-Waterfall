@@ -1,14 +1,16 @@
 #ifndef _VALVE_OUTPUT_H_
 #define _VALVE_OUTPUT_H_
 
+//#define OPEN_CLOSE_OFFSET
+
 //Pin definitions for valve output shift registers
 #define SRCLR_PIN 9  //Active low
 #define SRCLK_PIN 8
 #define RCLK_PIN 7
 #define OE_PIN 6     //Active Low
 
-#define SER1_PIN 2
-#define SER2_PIN 3
+#define SER1_PIN 3
+#define SER2_PIN 2
 #define SER3_PIN 4
 
 //Definitions for output size
@@ -30,7 +32,7 @@ extern byte pattern_load_low_high;
 volatile extern byte pattern_load_full_line;
 
 void setup_shiftregs(void);
-void load_shiftreg_low_high (byte *);
+void load_shiftreg_low_high (byte *, int);
 void load_shiftreg_high_low (byte *);
 void load_shiftreg_full_line (byte *, int);
 void update_output(void);

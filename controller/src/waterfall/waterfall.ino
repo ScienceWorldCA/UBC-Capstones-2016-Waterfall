@@ -128,7 +128,7 @@ void convertToByte(char* filename){
     }
     if(bitCounter == 0){
       bitCounter = 8;
-      //shiftReg[lineIndex + regCounter] = byteShuffle(shiftReg[lineIndex + regCounter]);
+      shiftReg[lineIndex + regCounter] = byteShuffle(shiftReg[lineIndex + regCounter]);
       regCounter++;
     }
     //change number of regCounter when width is different
@@ -194,7 +194,7 @@ void loadSelectedPattern(int index){
 
 void loop(){
   isButtonDebouncing = 0;
-  convertToByte("6.txt");
+  convertToByte("2.txt");
   setup_shiftregs();
   Timer3.initialize(1000); //Set debounce time as 1 second
   Timer3.attachInterrupt(resetButtonDebounce);  
@@ -216,15 +216,19 @@ void loop(){
       }
     }
 
-    //if (pattern_load_high_low)
-    //  load_shiftreg_high_low(shiftReg);
-    //if (pattern_load_low_high)
-    //  load_shiftreg_low_high(shiftReg);
+    #ifdef OPEN_CLOSE_OFFSET
+    if (pattern_load_low_high)
+      load_shiftreg_low_high(shiftReg, lines);
+    if (pattern_load_high_low)
+      load_shiftreg_high_low(shiftReg);
+    #endif
 
+    #ifndef OPEN_CLOSE_OFFSET
     if (pattern_load_full_line)
     {
       load_shiftreg_full_line(shiftReg, lines);
     }
+    #endif
   }
   
 } 
