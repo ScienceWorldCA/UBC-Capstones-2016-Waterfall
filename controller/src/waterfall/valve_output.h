@@ -9,8 +9,8 @@
 #define RCLK_PIN 7
 #define OE_PIN 6     //Active Low
 
-#define SER1_PIN 3
-#define SER2_PIN 2
+#define SER1_PIN 2
+#define SER2_PIN 3
 #define SER3_PIN 4
 
 //Definitions for output size
@@ -19,7 +19,7 @@
 #define NUM_VALVES NUM_VALVE_BANKS * VALVES_PER_VALVE_BANK
 
 //length of each output "pixel" in milliseconds
-#define PIXEL_TIME 100
+#define PIXEL_TIME 7
 
 //The time to delay the writing of low->high transitions (in ms)
 #define PIXEL_OFFSET_TIME 25
