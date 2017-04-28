@@ -5,7 +5,11 @@ README for Digital Waterfall driver software
 SECTIONS:
 1) DESCRIPTION OF PROGRAM FLOW
 2) MODIFYING PERFORMANCE
+   a) Tuning Pixel Length
+   b) Enabling Pixel Length Normalization
+   c) Tuning Pixel Length Normalization
 3) MODIFYING FOR DIFFERENT NUMBER OF VALVES
+   a) Changing the Number of Valve Banks
 
 =================================================================================
 
@@ -41,7 +45,7 @@ To adjust the amount of offset used in the Pixel Length Normalization, modify th
 3) MODIFYING FOR DIFFERENT NUMBER OF VALVES
 Whe modifying for a different number of valves, there are a few definitions that need to change. Originally, this system uses 3 banks of 8 valves each. It is recommended that you not modify the number of valves in a single bank for several reasons. 8 valves per bank makes it easy to split bank data into bytes. Also, the shift registers used in this project have 8 bits and therefore work well as part of an 8 valve bank.
 
-a) Changing the number of valve banks
+a) Changing the Number of Valve Banks
 -Modify the value of NUM_VALVE_BANKS defined in valve_output.h
 -Modify the value of imageWidthBytes defined in waterfall.ino
 -Modify the value of lineWidth defined in waterfall.ino to be (number of valve -banks * 8) + 1
