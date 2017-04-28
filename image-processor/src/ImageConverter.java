@@ -1,15 +1,15 @@
 package imageconverter;
 
-import java.awt.Graphics2D;
+import java.io.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+
+import javax.swing.*;
 
 import javax.imageio.ImageIO;
 
-public class image2binary 
+public class ImageConverter 
 {	
 	public static void resize(String inputImagePath, String outputImagePath, int scaledWidth, int scaledHeight) throws IOException{
 		File imputFile = new File(inputImagePath);
@@ -64,9 +64,9 @@ public class image2binary
 					if(((image.getRGB(x, y) >> 4) & 0xFF) >= 127)
 						flag++;
 					if(flag >= 2)
-						pixels[x][y] = 0;
-					else
 						pixels[x][y] = 1;
+					else
+						pixels[x][y] = 0;
 					//pixels[x][y] = (byte)(image.getRGB(x, y) == 0xFFFFFFFF ? 0 : 1);
 				}
 			}
@@ -85,10 +85,48 @@ public class image2binary
 	}
 
 	public static void main(String[] args) {
-		String inputImagePath = "C:\\Users\\User\\Documents\\imageProcessing\\b.png";
-		String outputImagePath = "C:\\Users\\User\\Documents\\imageProcessing\\b_resized.png";
-		String outputBinaryPath = "C:\\Users\\User\\Documents\\imageProcessing\\b_binary.txt";
-		double scaledWidth = 64.0;
-		imageProcessing(inputImagePath, outputImagePath, outputBinaryPath, scaledWidth);
+		JFrame.setDefaultLookAndFeelDecorated(true);
+	    JDialog.setDefaultLookAndFeelDecorated(true);
+	    JFrame frame = new JFrame("Image Conversion");
+	    JPanel panel = new JPanel();
+	    JLabel label = new JLabel("Choose an image to convert:");
+	    JButton openButton = new JButton("Open File");
+	    panel.add(label);
+	    panel.add(openButton);
+	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    frame.setLocationRelativeTo(null);
+	    openButton.addActionListener(new ActionListener() {
+	      public void actionPerformed(ActionEvent e) {
+	        JFileChooser fileChooser = new JFileChooser();
+	        int returnValue = fileChooser.showOpenDialog(null);
+	        if (returnValue == JFileChooser.APPROVE_OPTION) {
+	          File selectedFile = fileChooser.getSelectedFile();
+	          String inputImagePath = selectedFile.getPath();
+	  		  int index = inputImagePath.lastIndexOf(".");
+			  String outputImagePath = inputImagePath.substring(0, index) + "-resized.bmp";
+			  String outputBinaryPath = inputImagePath.substring(0, index) + ".txt";
+	          //0 for yes, 1 for no, 2 for cancel
+	          int selection = JOptionPane.showConfirmDialog(frame, "Do you want to convert this image to binary text?");
+			  if(selection == 0){
+				  int flag;
+				  do{
+					  String width = JOptionPane.showInputDialog("Enter number of valves: ");
+					  try{
+						  int scaledWidth = Integer.parseInt(width);  
+						  imageProcessing(inputImagePath, outputImagePath, outputBinaryPath, (double)scaledWidth);
+						  JOptionPane.showMessageDialog(frame, "Image converted successfully.");
+						  flag = 1;
+					  }catch(NumberFormatException exception){
+						  JOptionPane.showMessageDialog(frame, "Wrong format entered!", "error", JOptionPane.ERROR_MESSAGE);
+						  flag = 0;
+					  }
+				  }while(flag == 0);
+			  }
+	        }
+	      }
+	    });
+	    frame.add(panel);
+	    frame.pack();
+	    frame.setVisible(true);
 	}
 }
